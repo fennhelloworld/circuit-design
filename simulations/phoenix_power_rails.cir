@@ -1,0 +1,35 @@
+* LeoDrone Phoenix - Power Rails (Behavioral Model)
+* 4S LiPo → 5V BEC → 3.3V LDO
+
+* === Fixed Voltage Rails (behavioral) ===
+V_5V  n_5v  0 DC 5.0
+V_3V3 n_3v3 0 DC 3.3
+
+* === 3.3V Rail Loads ===
+R_ESP32   n_3v3 0 13.75    ; 240mA (ESP32-S3 active WiFi)
+R_BME280  n_3v3 0 1222     ; 2.7mA
+R_ICM     n_3v3 0 2357     ; 1.4mA
+R_GPS     n_3v3 0 132      ; 25mA
+R_UART    n_3v3 0 10000    ; 0.33mA
+
+* === 5V Rail Loads ===
+R_CAM     n_5v  0 5         ; 1A (4x IMX219)
+R_RPI5    n_5v  0 5.55      ; 900mA (RPi5 active)
+
+* === BEC Input Current (14.8V → 5V+3.3V, 90% eff) ===
+* Total 5V: 1A + 0.9A = 1.9A → 5V*1.9A/0.9 = 10.56W
+* Total 3.3V: 269mA → 3.3*0.269/0.85 = 1.04W (LDO eff ~85%)
+* BEC input: (10.56+1.04)/0.9/14.8 = 870mA from 4S
+E_BEC_I n_bat 0 VOL='(5.0*I(V_5V)*(-1)+3.3*I(V_3V3)*(-1)/0.85)/0.9/14.8'
+R_BAT n_bat 0 1           ; Sense resistor for current measurement
+
+* === Analysis ===
+.OP
+.PRINT OP V(n_5v) V(n_3v3)
+.PRINT OP I(V_5V) I(V_3V3)
+.PRINT DC V(n_bat)
+
+* Temperature sweep
+.DC TEMP -20 60 10
+
+.END
